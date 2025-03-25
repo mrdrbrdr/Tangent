@@ -1,1 +1,1 @@
-# Tangent
+# Tangent - A non-linear conversation app using LLMs.
