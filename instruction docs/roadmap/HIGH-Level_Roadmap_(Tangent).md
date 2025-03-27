@@ -1,13 +1,13 @@
 ## **High-Level Roadmap**
 
-### **1. Initial Project Setup**
+### **[1. Initial Project Setup](1._Initial_Project_Setup.md)**
 1. **Verify Environment**:
     - Check/install Node, npm, Git, and confirm you can run them on your Windows machine.
     - Create a new GitHub repo for Tangent, clone it locally.
 
 2. **Add `.gitignore`**:
     - Ensure `node_modules`, `.env`, and other sensitive files are ignored.
-### **2. Basic Folder Structure & Tooling**
+### **[2. Basic Folder Structure & Tooling](2._Basic_Folder_Structure_&_Tooling.md)**
 1. **Create Directories**:
     - `src/client` (for Vue)
     - `src/server` (for Express)
@@ -19,7 +19,7 @@
 3. **Install Core Packages**:
     - Express, Vue (and Vite or Vue CLI), Prisma, etc.
 
-### **3. Database Setup (SQLite + Prisma)**
+### **[3. Database Setup (SQLite + Prisma)](3._Database_Setup_(SQLite_+_Prisma).md)**
 1. **Install & Configure Prisma**:
     - `npx prisma init`
     - Update `DATABASE_URL` in `.env` to point to a local SQLite file, e.g. `file:./dev.db`
@@ -33,7 +33,7 @@
 4. **Test DB Connection**:
     - Simple script/route to confirm you can read/write data.
 
-### **4. Basic Express Server & API Routes**
+### **[4. Basic Express Server & API Routes](4._Basic_Express_Server_&_API_Routes.md)**
 1. **Set Up Server**:
     - Create `server.js` (or `index.js`) in `src/server`.
 
@@ -44,7 +44,7 @@
     - `POST /api/chat`: to accept user input, store messages, etc.
     - `GET /api/conversation/:id`: to fetch conversation data.
 
-### **5. LLM Integration (OpenAI)**
+### **[5. LLM Integration (OpenAI)](5._LLM_Integration_(OpenAI).md)**
 1. **Obtain & Secure API Key**:
     - Store in `.env` (`OPENAI_API_KEY`)
 
