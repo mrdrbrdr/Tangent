@@ -1,4 +1,7 @@
+require('dotenv').config();
 const express = require('express');
+
+const { getLLMResponse } = require('./controllers/llm');
 
 const app = express();
 
@@ -10,7 +13,12 @@ app.get('/api/health', (req, res) => {
 
 app.post('/api/chat', async (req, res) => {
   const userInput = req.body.message;
-  res.json({ response: `You said: ${userInput}` });
+  try {
+    const llmResponse = await getLLMResponse(userInput);
+    res.json({ response: llmResponse });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get response from LLM" });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
