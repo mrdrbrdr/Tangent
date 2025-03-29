@@ -8,7 +8,7 @@
 
 #### 1.1.2 **Purpose**  
 
- Tangent is a web application that provides a **non-linear conversational interface** for interacting with Large Language Models (LLMs). Instead of navigating a single, linear chat thread, users can create “branching” tangents whenever a new subtopic arises. Each node (prompt-response pair) gets automatically summarized for quick scanning in an overview. Our early focus is on **solidifying the core logic** for branching conversations, while leaving room to add advanced 3D visuals later.
+ Tangent is a web application that provides a **non-linear conversational interface** for interacting with Large Language Models (LLMs). Instead of navigating a single, linear chat thread, users can create "branching" tangents whenever a new subtopic arises. Each node (prompt-response pair) gets automatically summarized for quick scanning in an overview. Our early focus is on **solidifying the core logic** for branching conversations, while leaving room to add advanced 3D visuals later.
 
 
 #### 1.1.3 **Who Uses It**
@@ -22,11 +22,11 @@
 
 #### 1.1.4 **Tech Stack (Planned)**
 * **Frontend**: Vue.js for the main interface
-	* An initially **simplified 2D layout** for the “overview” (using either basic HTML/CSS or a lightweight 2D library such as D3.js)
+	* An initially **simplified 2D layout** for the "overview" (using either basic HTML/CSS or a lightweight 2D library such as D3.js)
 	* Potential future swap to Three.js for a rich 3D interface and enhanced transitions
 * **Backend**: Node.js \+ Express
 * **Database (MVP)**: **SQLite** (via Prisma ORM)
-	* We’ll later consider migrating to PostgreSQL once the MVP is solid
+	* We'll later consider migrating to PostgreSQL once the MVP is solid
 * **LLM Integration**: Calls to the OpenAI API
 * **Authentication**: Out of scope for the MVP (likely single-user or ephemeral)
 
@@ -160,8 +160,8 @@ We keep the original wireframes for reference; implementation details will diffe
 #### 2.3.3 **Selective Deletion**
 1. **Latest Node**: Removed immediately
 2. **Middle Node**:
-	 * Show a modal warning that all its child nodes will be removed
-	 * On confirmation, remove them with a 15-second undo window
+	 * Show a modal warning that all its child nodes will be removed
+	 * On confirmation, remove them with a 15-second undo window
 #### 2.3.4 **Zooming Out/In**
 1. SHIFT \+ mousewheel (or a “View Overview” button)
 2. Transition to a **2D** node map (MVP)
@@ -351,16 +351,18 @@ Tangent Web App/
 ```
 
 ### **5.2 Updating File Structure**
-1. **Install `tree` Utility** (optional)
-	 * On macOS, `brew install tree`
-	 * On Windows, you can find [tree command alternatives](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/tree) or simply rely on `dir /s`
+1. **Install tree-node-cli** (recommended for cross-platform compatibility)
+	* Run: `npm install -g tree-node-cli`
+	* This provides the `treee` command (note the three e's)
 
 2. **Generate the Tree Output**
 * From project root, run:
 ```
-tree -L 2 -I 'node_modules|.git'
+treee -L 4 -I "node_modules|.git|instruction docs" -a
 ```
-	(Adjust as needed for Windows.)
+	* `-L 2` limits depth to 2 levels
+	* `-I "node_modules"` ignores the node_modules directory
+	* -a includes the files in the folders
 
 3. **Replace Section 5.1** with the new output
-   * Keep your documentation up to date whenever you add or restructure folders
+   * Keep your documentation up to date whenever you add or restructure folders
