@@ -345,9 +345,44 @@ And later replace this with a more advanced 2D/3D approach.
 ### **5.1 Current File Structure**
 
 ```
-Tangent Web App/
-  ├─ .dist/
-  └─ instruction.md
+Tangent
+├── .dist
+├── .env
+├── README.md
+├── config
+├── docs
+│   ├── PRD.md
+│   ├── mockups
+│   │   ├── main chat collapse.png
+│   │   ├── main chat.png
+│   │   ├── overview tooltip.png
+│   │   └── overview.png
+│   ├── roadmap
+│   │   ├── 1._Initial_Project_Setup.md
+│   │   ├── 2._Basic_Folder_Structure_&_Tooling.md 
+│   │   ├── 3._Database_Setup_(SQLite_+_Prisma).md 
+│   │   ├── 4._Basic_Express_Server_&_API_Routes.md
+│   │   ├── 5._LLM_Integration_(OpenAI).md
+│   │   ├── 6._Summaries_&_Conversation_Flow.md    
+│   │   └── HIGH-Level_Roadmap_(Tangent).md        
+│   └── tangent_pitch.md
+├── package-lock.json
+├── package.json
+├── prisma
+│   ├── dev.db
+│   ├── migrations
+│   │   ├── 20250326235527_initial_schema_setup
+│   │   │   └── migration.sql
+│   │   └── migration_lock.toml
+│   └── schema.prisma
+├── src
+│   ├── client
+│   └── server
+│       ├── controllers
+│       │   └── llm.js
+│       ├── db.js
+│       └── index.js
+└── tests
 ```
 
 ### **5.2 Updating File Structure**

@@ -1,52 +1,59 @@
+// Contains your Prisma schema and migrations.
+
+// Database configuration
 datasource db {
-  provider = "sqlite"
+  provider = "sqlite"    // Using SQLite for development
   url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js"    // Generates TypeScript/JavaScript client
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String?  @unique
-  apiKey    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  // Relationship
-  conversations Conversation[]
+  id        Int      @id @default(autoincrement())    // Unique identifier for user
+  email     String   @unique    // User's email, must be unique
+  apiKey    String?    // Optional OpenAI API key for user
+  createdAt DateTime @default(now())    // When user was created
+  updatedAt DateTime @updatedAt    // Last time user was updated
+  conversations Conversation[]    // List of all conversations owned by user
 }
 
 model Conversation {
-  id        Int      @id @default(autoincrement())
-  title     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  // Relationship
-  ownerId    Int?
-  owner      User?    @relation(fields: [ownerId], references: [id])
-  nodes      Node[]
+  id        Int      @id @default(autoincrement())    // Unique identifier for conversation
+  title     String?    // Optional title for the conversation
+  createdAt DateTime @default(now())    // When conversation was created
+  updatedAt DateTime @updatedAt    // Last time conversation was updated
+  userId    Int    // Required link to user (removed optional)
+  user      User   @relation(fields: [userId], references: [id])    // Links to User model
+  messages  Message[]    // All messages in this conversation
 }
 
-model Node {
-  id             Int      @id @default(autoincrement())
-  content        String
-  summaryShort   String?
-  summaryLong    String?
-  branchType     BranchType @default(MAIN)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+model Message {
+  id             Int           @id @default(autoincrement())    // Unique identifier for message
+  userInput      String    // The user's question/prompt
+  aiResponse     String    // The LLM's response
+  summaryShort   String?    // 40-80 char summary of the response
+  summaryLong    String?    // ~350 char summary of the response
+  messageType    MessageType   @default(MAIN)    // Whether this is main thread or tangent
+  createdAt      DateTime      @default(now())    // When message was created
+  updatedAt      DateTime      @updatedAt    // Last time message was updated
 
-  conversationId Int
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-
-  parentId       Int?
-  parent         Node?        @relation("NodeToNode", fields: [parentId], references: [id])
-  children       Node[]       @relation("NodeToNode")
+  conversationId Int    // Which conversation this belongs to
+  conversation   Conversation  @relation(fields: [conversationId], references: [id])    // Links to Conversation model
+  
+  parentMessageId Int?    // Which message this branched from (if any)
+  parentMessage   Message?    @relation("MessageBranches", fields: [parentMessageId], references: [id])    // Links to parent message
+  childMessages   Message[]   @relation("MessageBranches")    // Any messages that branched from this one
 }
 
 // This is how we map an enum in Prisma
 enum BranchType {
   MAIN
   TANGENT
+}
+
+enum MessageType {
+  MAIN    // Part of the main conversation thread
+  TANGENT    // A branch from another message
 }

@@ -19,8 +19,9 @@
     "test": "tests"
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "openai": "^4.89.0"
+    "openai": "^4.91.0"
   },
   "devDependencies": {
     "@prisma/client": "^6.5.0",
