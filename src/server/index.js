@@ -2,6 +2,7 @@
 
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { getLLMResponseWithSummaries } = require('./controllers/llm');
 const { PrismaClient } = require('@prisma/client');
 
@@ -9,6 +10,7 @@ const app = express();
 const prisma = new PrismaClient();
 
 app.use(express.json());
+app.use(cors());
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK' });
