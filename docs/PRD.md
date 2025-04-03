@@ -345,13 +345,15 @@ And later replace this with a more advanced 2D/3D approach.
 ### **5.1 Current File Structure**
 
 ```
-Tangent
-├── .dist
-├── .env
-├── README.md
-├── config
-├── docs
+Tangent       
+├── .dist     
+├── .env      
+├── README.md 
+├── config    
+├── docs      
 │   ├── PRD.md
+│   ├── ideas
+│   │   └── LLM _service_architecture.md
 │   ├── mockups
 │   │   ├── main chat collapse.png
 │   │   ├── main chat.png
@@ -359,12 +361,13 @@ Tangent
 │   │   └── overview.png
 │   ├── roadmap
 │   │   ├── 1._Initial_Project_Setup.md
-│   │   ├── 2._Basic_Folder_Structure_&_Tooling.md 
-│   │   ├── 3._Database_Setup_(SQLite_+_Prisma).md 
+│   │   ├── 2._Basic_Folder_Structure_&_Tooling.md
+│   │   ├── 3._Database_Setup_(SQLite_+_Prisma).md
 │   │   ├── 4._Basic_Express_Server_&_API_Routes.md
 │   │   ├── 5._LLM_Integration_(OpenAI).md
-│   │   ├── 6._Summaries_&_Conversation_Flow.md    
-│   │   └── HIGH-Level_Roadmap_(Tangent).md        
+│   │   ├── 6._Summaries_&_Conversation_Flow.md
+│   │   ├── 7._Vue_Front-End_(Basic_Chat_UI).md
+│   │   └── HIGH-Level_Roadmap_(Tangent).md
 │   └── tangent_pitch.md
 ├── package-lock.json
 ├── package.json
@@ -373,10 +376,21 @@ Tangent
 │   ├── migrations
 │   │   ├── 20250326235527_initial_schema_setup
 │   │   │   └── migration.sql
+│   │   ├── 20250401220405_separate_user_ai_messages
+│   │   │   └── migration.sql
 │   │   └── migration_lock.toml
 │   └── schema.prisma
 ├── src
 │   ├── client
+│   │   └── tangent-frontend
+│   │       ├── .vscode
+│   │       ├── README.md
+│   │       ├── index.html
+│   │       ├── package-lock.json
+│   │       ├── package.json
+│   │       ├── public
+│   │       ├── src
+│   │       └── vite.config.js
 │   └── server
 │       ├── controllers
 │       │   └── llm.js
