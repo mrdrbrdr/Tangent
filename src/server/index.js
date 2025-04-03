@@ -19,40 +19,55 @@ app.get('/api/health', (req, res) => {
 app.post('/api/chat', async (req, res) => {
   const userInput = req.body.message;
   
-  // For MVP, we'll use default IDs
-  const userId = 1;  // Assuming we have a user with ID 1
-  const conversationId = 1;
-
   try {
-    // 1. Get LLM response with summaries
+    // For MVP, we'll create a default user and conversation if they don't exist
+    let user = await prisma.user.findFirst();
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: 'default@example.com',
+        },
+      });
+    }
+
+    let conversation = await prisma.conversation.findFirst();
+    if (!conversation) {
+      conversation = await prisma.conversation.create({
+        data: {
+          userId: user.id,
+          title: 'Default Conversation',
+        },
+      });
+    }
+
+    // Get LLM response with summaries
     const { mainAnswer, summaryShort, summaryLong } = 
       await getLLMResponseWithSummaries(userInput);
 
-    // 2. Save to database with separated user input and AI response
-    const newMessage = await prisma.message.create({
+    // Create new node
+    const newNode = await prisma.node.create({
       data: {
+        conversationId: conversation.id,
         userInput,
         aiResponse: mainAnswer,
         summaryShort,
         summaryLong,
-        messageType: 'MAIN',
-        conversationId,
-        // parentMessageId remains null for main thread messages
-      }
+        branchType: 'MAIN', // For now, all messages are MAIN
+      },
     });
 
-    // 3. Send response back to client
+    // Send response back to client
     res.json({
       response: mainAnswer,
       shortSummary: summaryShort,
       longSummary: summaryLong,
-      messageId: newMessage.id
+      nodeId: newNode.id
     });
 
   } catch (error) {
     console.error('Chat endpoint error:', error);
     res.status(500).json({ 
-      error: 'Failed to process your request.' 
+      error: error.message || 'Failed to process your request'
     });
   }
 });

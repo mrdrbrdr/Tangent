@@ -11,49 +11,57 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())    // Unique identifier for user
-  email     String   @unique    // User's email, must be unique
-  apiKey    String?    // Optional OpenAI API key for user
-  createdAt DateTime @default(now())    // When user was created
-  updatedAt DateTime @updatedAt    // Last time user was updated
-  conversations Conversation[]    // List of all conversations owned by user
+  id          Int            @id @default(autoincrement())
+  email       String         @unique
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  conversations Conversation[]
 }
 
 model Conversation {
-  id        Int      @id @default(autoincrement())    // Unique identifier for conversation
-  title     String?    // Optional title for the conversation
-  createdAt DateTime @default(now())    // When conversation was created
-  updatedAt DateTime @updatedAt    // Last time conversation was updated
-  userId    Int    // Required link to user (removed optional)
-  user      User   @relation(fields: [userId], references: [id])    // Links to User model
-  messages  Message[]    // All messages in this conversation
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+
+  title       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // One conversation can have many nodes
+  nodes       Node[]
 }
 
-model Message {
-  id             Int           @id @default(autoincrement())    // Unique identifier for message
-  userInput      String    // The user's question/prompt
-  aiResponse     String    // The LLM's response
-  summaryShort   String?    // 40-80 char summary of the response
-  summaryLong    String?    // ~350 char summary of the response
-  messageType    MessageType   @default(MAIN)    // Whether this is main thread or tangent
-  createdAt      DateTime      @default(now())    // When message was created
-  updatedAt      DateTime      @updatedAt    // Last time message was updated
-
-  conversationId Int    // Which conversation this belongs to
-  conversation   Conversation  @relation(fields: [conversationId], references: [id])    // Links to Conversation model
+model Node {
+  id             Int         @id @default(autoincrement())
   
-  parentMessageId Int?    // Which message this branched from (if any)
-  parentMessage   Message?    @relation("MessageBranches", fields: [parentMessageId], references: [id])    // Links to parent message
-  childMessages   Message[]   @relation("MessageBranches")    // Any messages that branched from this one
+  // The conversation this node belongs to
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  // If this is a tangent, which node did we fork from?
+  parentNodeId   Int?
+  parentNode     Node?       @relation("NodeToNode", fields: [parentNodeId], references: [id])
+  childNodes     Node[]      @relation("NodeToNode")
+
+  // The user prompt that triggered this node
+  userInput      String
+  // The AI response to that prompt
+  aiResponse     String
+
+  // Summaries for the entire user+AI exchange
+  summaryShort   String
+  summaryLong    String
+
+  // Distinguish main path from tangents
+  branchType     BranchType  // e.g., 'MAIN' or 'TANGENT'
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }
 
 // This is how we map an enum in Prisma
 enum BranchType {
   MAIN
   TANGENT
-}
-
-enum MessageType {
-  MAIN    // Part of the main conversation thread
-  TANGENT    // A branch from another message
 }

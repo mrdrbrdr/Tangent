@@ -5,7 +5,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// We’ll build a single function that returns all 3 items:
+// We'll build a single function that returns all 3 items:
 async function getLLMResponseWithSummaries(userInput) {
   try {
     // Build a prompt that requests the main answer, plus short & long summaries
@@ -34,7 +34,7 @@ async function getLLMResponseWithSummaries(userInput) {
 
     const rawText = response.choices[0].message.content.trim();
 
-    // The AI should return valid JSON. Let's parse it:
+    // Parse the JSON response
     let parsed;
     try {
       parsed = JSON.parse(rawText);
@@ -43,17 +43,21 @@ async function getLLMResponseWithSummaries(userInput) {
       throw new Error('LLM did not return valid JSON');
     }
 
-    // Check if keys exist
-    const {
-      mainAnswer = "No main answer found",
-      summaryShort = "No short summary",
-      summaryLong = "No long summary"
-    } = parsed;
+    // Validate that all required fields exist and are non-empty
+    if (!parsed.mainAnswer || !parsed.summaryShort || !parsed.summaryLong) {
+      console.error('Incomplete LLM response:', parsed);
+      throw new Error('LLM response missing required fields');
+    }
 
-    return { mainAnswer, summaryShort, summaryLong };
+    // Return with our expected field names
+    return {
+      mainAnswer: parsed.mainAnswer,
+      summaryShort: parsed.summaryShort,
+      summaryLong: parsed.summaryLong
+    };
   } catch (error) {
     console.error("Error calling OpenAI API:", error);
-    throw error;
+    throw error;  // This will be caught by the Express error handler
   }
 }
 
