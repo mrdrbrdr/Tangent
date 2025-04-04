@@ -85,10 +85,6 @@ export default {
   overflow: hidden;
 }
 
-.chat-input-wrapper:focus-within {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.2);
-}
 
 .chat-input-inner {
   display: flex;
