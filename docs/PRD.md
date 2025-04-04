@@ -345,12 +345,12 @@ And later replace this with a more advanced 2D/3D approach.
 ### **5.1 Current File Structure**
 
 ```
-Tangent       
-├── .dist     
-├── .env      
-├── README.md 
-├── config    
-├── docs      
+Tangent
+├── .dist
+├── .env
+├── README.md
+├── config
+├── docs
 │   ├── PRD.md
 │   ├── ideas
 │   │   └── LLM _service_architecture.md
@@ -363,10 +363,12 @@ Tangent
 │   │   ├── 1._Initial_Project_Setup.md
 │   │   ├── 2._Basic_Folder_Structure_&_Tooling.md
 │   │   ├── 3._Database_Setup_(SQLite_+_Prisma).md
+│   │   ├── 3a._Database_Setup.md
 │   │   ├── 4._Basic_Express_Server_&_API_Routes.md
 │   │   ├── 5._LLM_Integration_(OpenAI).md
 │   │   ├── 6._Summaries_&_Conversation_Flow.md
 │   │   ├── 7._Vue_Front-End_(Basic_Chat_UI).md
+│   │   ├── 8._Branching_Logic.md
 │   │   └── HIGH-Level_Roadmap_(Tangent).md
 │   └── tangent_pitch.md
 ├── package-lock.json
@@ -378,25 +380,41 @@ Tangent
 │   │   │   └── migration.sql
 │   │   ├── 20250401220405_separate_user_ai_messages
 │   │   │   └── migration.sql
+│   │   ├── 20250403090653_branching_schema
+│   │   │   └── migration.sql
 │   │   └── migration_lock.toml
 │   └── schema.prisma
 ├── src
 │   ├── client
 │   │   └── tangent-frontend
 │   │       ├── .vscode
+│   │       │   └── extensions.json
 │   │       ├── README.md
 │   │       ├── index.html
 │   │       ├── package-lock.json
 │   │       ├── package.json
 │   │       ├── public
+│   │       │   └── vite.svg
 │   │       ├── src
+│   │       │   ├── App.vue
+│   │       │   ├── assets
+│   │       │   │   └── vue.svg
+│   │       │   ├── components
+│   │       │   │   └── Chatview.vue
+│   │       │   ├── main.js
+│   │       │   └── style.css
 │   │       └── vite.config.js
 │   └── server
 │       ├── controllers
-│       │   └── llm.js
+│       │   ├── llm.js
+│       │   └── nodes.js
 │       ├── db.js
-│       └── index.js
+│       ├── index.js
+│       └── routes
+│           ├── chat.js
+│           └── fork.js
 └── tests
+
 ```
 
 ### **5.2 Updating File Structure**
@@ -407,7 +425,7 @@ Tangent
 2. **Generate the Tree Output**
 * From project root, run:
 ```
-treee -L 4 -I "node_modules|.git|instruction docs" -a
+treee -L 6 -I "node_modules|.git|instruction docs" -a
 ```
 	* `-L 2` limits depth to 2 levels
 	* `-I "node_modules"` ignores the node_modules directory

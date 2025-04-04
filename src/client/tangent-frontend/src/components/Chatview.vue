@@ -2,11 +2,7 @@
   <div class="chat-container">
     <div class="messages">
       <!-- Display each message stored in local state -->
-      <div 
-        v-for="(msg, idx) in messages" 
-        :key="msg.nodeId || idx" 
-        class="message-bubble"
-      >
+      <div v-for="(msg, idx) in messages" :key="idx" class="message-bubble">
         <p>User: {{ msg.userInput }}</p>
         <p>AI: {{ msg.aiResponse }}</p>
         <small>Short Summary: {{ msg.summaryShort }}</small>
@@ -19,31 +15,29 @@
       </div>
     </div>
 
-    <!-- Replace form with div for regular chat -->
-    <div class="chat-input-container">
-      <input
-        v-model="userPrompt"
-        placeholder="Type your message"
-        class="prompt-input"
-        @keyup.enter="sendMessage"
-      />
-      <button @click="sendMessage">Send</button>
-    </div>
-
-    <!-- Replace form with div for fork -->
+    <!-- Fork form -->
     <div v-if="forkingFromId" class="fork-section">
       <p>Creating a tangent from previous response</p>
-      <div class="chat-input-container">
+      <form @submit.prevent="createFork">
         <input
           v-model="forkPrompt"
           placeholder="Enter your tangent question"
           class="prompt-input"
-          @keyup.enter="createFork"
         />
-        <button @click="createFork">Send Tangent</button>
-        <button @click="cancelFork" class="cancel-button">Cancel</button>
-      </div>
+        <button type="submit">Send Tangent</button>
+        <button type="button" @click="cancelFork" class="cancel-button">Cancel</button>
+      </form>
     </div>
+    
+    <!-- Regular chat form -->
+    <form v-else @submit.prevent="sendMessage">
+      <input
+        v-model="userPrompt"
+        placeholder="Type your message"
+        class="prompt-input"
+      />
+      <button type="submit">Send</button>
+    </form>
   </div>
 </template>
 
@@ -79,7 +73,7 @@ export default {
           aiResponse: response,
           summaryShort: shortSummary,
           summaryLong: longSummary,
-          nodeId: nodeId || Date.now()
+          nodeId: nodeId
         };
         this.messages.push(newMessage);
 
@@ -123,7 +117,7 @@ export default {
           aiResponse: response,
           summaryShort: shortSummary,
           summaryLong: longSummary,
-          nodeId: nodeId || Date.now(),
+          nodeId: nodeId,
           isTangent: true,
           parentId: this.forkingFromId
         };

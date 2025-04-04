@@ -7,6 +7,7 @@
 
 2. **Add `.gitignore`**:
     - Ensure `node_modules`, `.env`, and other sensitive files are ignored.
+
 ### **[2. Basic Folder Structure & Tooling](2._Basic_Folder_Structure_&_Tooling.md)**
 1. **Create Directories**:
     - `src/client` (for Vue)
