@@ -16,13 +16,11 @@
             ></textarea>
           </div>
           
-          <!-- Send button -->
+          <!-- Send button - always visible -->
           <div class="send-button-wrapper">
             <button 
               type="submit" 
               class="send-button"
-              :disabled="!message.trim()"
-              :class="{ 'send-button-active': message.trim() }"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7 11L12 6M12 6L17 11M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="rotate(90 12 12)"/>
@@ -73,23 +71,23 @@ export default {
 <style scoped>
 .chat-input-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 780px;
   margin: 0 auto;
   padding: 0 16px;
+  box-sizing: border-box;
 }
 
 .chat-input-wrapper {
   border-radius: 28px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background-color: var(--background-color, #ffffff);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #343541;
   transition: box-shadow 0.3s ease;
   overflow: hidden;
 }
 
 .chat-input-wrapper:focus-within {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .chat-input-inner {
@@ -114,11 +112,11 @@ export default {
   line-height: 1.5;
   max-height: 150px;
   outline: none;
-  color: var(--text-color, #333333);
+  color: rgba(255, 255, 255, 0.87);
 }
 
 .message-textarea::placeholder {
-  color: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .send-button-wrapper {
@@ -131,50 +129,22 @@ export default {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: transparent;
-  color: rgba(0, 0, 0, 0.3);
+  background-color: #4CAF50;
+  color: white;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.send-button-active {
-  background-color: #2c3e50;
-  color: white;
+.send-button:hover {
+  background-color: #45a049;
 }
 
-.send-button:hover.send-button-active {
-  background-color: #1e2a37;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .chat-input-wrapper {
-    background-color: var(--background-color, #303030);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .message-textarea {
-    color: var(--text-color, rgba(255, 255, 255, 0.87));
-  }
-  
-  .message-textarea::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-  }
-  
-  .send-button {
-    color: rgba(255, 255, 255, 0.5);
-  }
-  
-  .send-button-active {
-    background-color: #4CAF50;
-  }
-  
-  .send-button:hover.send-button-active {
-    background-color: #45a049;
-  }
+.send-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style> 
