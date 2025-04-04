@@ -24,10 +24,10 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow: hidden; /* Prevent body scrolling */
 }
 
 h1 {
@@ -61,10 +61,21 @@ button:focus-visible {
 
 /* Modify #app to be more suitable for a chat interface */
 #app {
-  margin: 0 auto;
-  padding: 1rem;
-  /* Remove text-align: center since we want left-aligned chat messages */
-  /* Remove max-width for now - we'll adjust this when building the chat UI */
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* Prevent app scrolling */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sidebar spacing */
+#app > *:not(.sidebar-container) {
+  margin-left: 24px;
 }
 
 @media (prefers-color-scheme: light) {

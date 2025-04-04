@@ -1,6 +1,7 @@
 <template>
-  <div class="chat-container">
-    <div class="messages">
+  <div class="chat-view">
+    <!-- Messages container -->
+    <div class="messages-container">
       <!-- Display each message stored in local state -->
       <div v-for="(msg, idx) in messages" :key="idx" class="message-bubble">
         <p>User: {{ msg.userInput }}</p>
@@ -13,6 +14,11 @@
           Fork This Response
         </button>
       </div>
+    </div>
+    
+    <!-- Chat Input -->
+    <div class="chat-input">
+      <ChatInput @send-message="handleSendMessage" />
     </div>
 
     <!-- Fork form -->
@@ -28,24 +34,18 @@
         <button type="button" @click="cancelFork" class="cancel-button">Cancel</button>
       </form>
     </div>
-    
-    <!-- Regular chat form -->
-    <form v-else @submit.prevent="sendMessage">
-      <input
-        v-model="userPrompt"
-        placeholder="Type your message"
-        class="prompt-input"
-      />
-      <button type="submit">Send</button>
-    </form>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import ChatInput from './ChatInput.vue';
 
 export default {
   name: 'ChatView',
+  components: {
+    ChatInput
+  },
   data() {
     return {
       userPrompt: '',
@@ -55,6 +55,12 @@ export default {
     };
   },
   methods: {
+    handleSendMessage(message) {
+      // Handle the message from ChatInput
+      console.log('Message to send:', message);
+      this.userPrompt = message;
+      this.sendMessage();
+    },
     async sendMessage() {
       try {
         if (!this.userPrompt) return;
@@ -136,14 +142,27 @@ export default {
 </script>
 
 <style scoped>
-.chat-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
+.chat-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: calc(100vh - 40px); /* Reduce height to avoid overflow */
+  position: relative;
 }
-.messages {
-  margin-bottom: 20px;
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
 }
+
+.chat-input {
+  position: sticky;
+  bottom: 20px;
+  padding: 16px 0;
+  background: var(--background-color, #242424); /* Match app background */
+}
+
 .message-bubble {
   border: 1px solid #ddd;
   padding: 10px;

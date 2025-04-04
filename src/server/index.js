@@ -7,6 +7,7 @@ const cors = require('cors');
 // Import route modules
 const chatRoutes = require('./routes/chat');
 const forkRoutes = require('./routes/fork');
+const conversationRoutes = require('./routes/conversation');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.get('/api/health', (req, res) => {
 // Apply routes
 app.use('/api', chatRoutes);
 app.use('/api', forkRoutes);
+app.use('/api', conversationRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
