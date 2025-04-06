@@ -80,6 +80,16 @@
     - `POST /api/chat` to send user prompts.
     - Show the returned LLM responses on the page.
 
+### **7a. Introduce Pinia for Global State Management**
+
+1.  Install Pinia and set up a useAppStore (or similar) to hold:
+    - Current user info
+    - Conversations, selected conversation ID
+    - Nodes for each conversation
+    - UI states like showOverview vs. showChat
+2.  Refactor existing front-end components (ChatView, etc.) to rely on the store instead of local data.
+3. This ensures all components share a single source of truth.
+
 ### **8. Branching Logic**
 1. **DB & API Updates**:
     - Add `branchType` (`'main'`, `'tangent'`) in the `nodes` table and `parentId`.

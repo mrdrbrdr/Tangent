@@ -24,7 +24,7 @@
 * **Frontend**: Vue.js for the main interface
 	* An initially **simplified 2D layout** for the "overview" (using either basic HTML/CSS or a lightweight 2D library such as D3.js)
 	* Potential future swap to Three.js for a rich 3D interface and enhanced transitions
-* **Backend**: Node.js \+ Express
+* **Backend**: Node.js + Express (using ES Modules)
 * **Database (MVP)**: **SQLite** (via Prisma ORM)
 	* We'll later consider migrating to PostgreSQL once the MVP is solid
 * **LLM Integration**: Calls to the OpenAI API
@@ -173,7 +173,7 @@ We keep the original wireframes for reference; implementation details will diffe
 
 ### **3.1 Libraries & Tools**
 * **Vue.js** for front-end user interface
-* **Node.js \+ Express** for back-end API routes
+* **Node.js + Express** for back-end API routes
 * **Prisma** for database interactions
 * **SQLite** (MVP database)
 * **OpenAI API** for LLM text generation and summaries
