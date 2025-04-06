@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import prisma from '../db.js';
+
 const router = express.Router();
-const prisma = require('../db');
 
 router.get('/conversation/:id/nodes', async (req, res) => {
   try {
@@ -38,4 +39,31 @@ router.get('/conversation/:id/nodes', async (req, res) => {
   }
 });
 
-module.exports = router; 
+// Function to fetch and sort conversations
+export async function getSortedConversations(userId) {
+  const conversations = await prisma.conversation.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' }, // Sort by date descending
+  });
+
+  // Group conversations
+  const today = [];
+  const yesterday = [];
+  const previous7Days = [];
+  const previous30Days = [];
+
+  const now = new Date();
+  conversations.forEach(convo => {
+    const diffTime = Math.abs(now - new Date(convo.createdAt));
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) today.push(convo);
+    else if (diffDays === 1) yesterday.push(convo);
+    else if (diffDays <= 7) previous7Days.push(convo);
+    else if (diffDays <= 30) previous30Days.push(convo);
+  });
+
+  return { today, yesterday, previous7Days, previous30Days };
+}
+
+export default router; 

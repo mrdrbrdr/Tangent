@@ -1,13 +1,13 @@
 // The core Express setup, route definitions.
 
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+import 'dotenv/config';  // New way to import dotenv in ESM
+import express from 'express';
+import cors from 'cors';
 
 // Import route modules
-const chatRoutes = require('./routes/chat');
-const forkRoutes = require('./routes/fork');
-const conversationRoutes = require('./routes/conversation');
+import chatRoutes from './routes/chat.js';  // Note: .js extension required in ESM
+import forkRoutes from './routes/fork.js';
+import conversationRoutes from './routes/conversation.js';
 
 const app = express();
 

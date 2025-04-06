@@ -2,6 +2,7 @@
   "name": "tangent",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Tangent is a non-linear conversation web app for LLM models",
   "main": "index.js",
   "scripts": {

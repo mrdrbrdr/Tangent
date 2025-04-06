@@ -1,5 +1,5 @@
 // src/server/controllers/nodes.js
-const prisma = require('../db');
+import prisma from '../db.js';
 
 // Get or create default user
 async function getOrCreateDefaultUser() {
@@ -57,7 +57,7 @@ async function createTangentNode(conversationId, parentNodeId, userInput, aiResp
   });
 }
 
-module.exports = {
+export {
   getOrCreateDefaultUser,
   getOrCreateDefaultConversation,
   createMainNode,

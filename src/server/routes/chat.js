@@ -1,12 +1,13 @@
 // src/server/routes/chat.js
-const express = require('express');
-const router = express.Router();
-const { getLLMResponseWithSummaries } = require('../controllers/llm');
-const { 
+import express from 'express';
+import { getLLMResponseWithSummaries } from '../controllers/llm.js';
+import { 
   getOrCreateDefaultUser, 
   getOrCreateDefaultConversation, 
   createMainNode 
-} = require('../controllers/nodes');
+} from '../controllers/nodes.js';
+
+const router = express.Router();
 
 router.post('/chat', async (req, res) => {
   const userInput = req.body.message;
@@ -45,4 +46,4 @@ router.post('/chat', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

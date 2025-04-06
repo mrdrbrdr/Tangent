@@ -1,9 +1,10 @@
 // src/server/routes/fork.js
-const express = require('express');
+import express from 'express';
+import { getLLMResponseWithSummaries } from '../controllers/llm.js';
+import { createTangentNode } from '../controllers/nodes.js';
+import prisma from '../db.js';
+
 const router = express.Router();
-const { getLLMResponseWithSummaries } = require('../controllers/llm');
-const { createTangentNode } = require('../controllers/nodes');
-const prisma = require('../db');
 
 router.post('/fork', async (req, res) => {
   const { parentNodeId, userInput } = req.body;
@@ -49,4 +50,4 @@ router.post('/fork', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
