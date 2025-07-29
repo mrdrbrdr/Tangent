@@ -14,6 +14,7 @@ async function getOrCreateDefaultUser() {
   return user;
 }
 
+
 // Get or create default conversation
 async function getOrCreateDefaultConversation(userId) {
   let conversation = await prisma.conversation.findFirst();
