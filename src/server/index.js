@@ -8,6 +8,7 @@ import cors from 'cors';
 import chatRoutes from './routes/chat.js';  // Note: .js extension required in ESM
 import forkRoutes from './routes/fork.js';
 import conversationRoutes from './routes/conversation.js';
+import userRoutes from './routes/user.js';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api', chatRoutes);
 app.use('/api', forkRoutes);
 app.use('/api', conversationRoutes);
+app.use('/api', userRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;

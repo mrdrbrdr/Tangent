@@ -39,6 +39,48 @@ router.get('/conversation/:id/nodes', async (req, res) => {
   }
 });
 
+// GET /api/conversations - List all conversations for default user
+router.get('/conversations', async (req, res) => {
+  try {
+    const { getOrCreateDefaultUser } = await import('../controllers/nodes.js');
+    const user = await getOrCreateDefaultUser();
+    
+    const conversations = await prisma.conversation.findMany({
+      where: { userId: user.id },
+      orderBy: { updatedAt: 'desc' }
+    });
+    
+    res.json(conversations);
+  } catch (error) {
+    console.error('Error fetching conversations:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to fetch conversations'
+    });
+  }
+});
+
+// POST /api/conversations - Create new conversation  
+router.post('/conversations', async (req, res) => {
+  try {
+    const { getOrCreateDefaultUser } = await import('../controllers/nodes.js');
+    const user = await getOrCreateDefaultUser();
+    
+    const conversation = await prisma.conversation.create({
+      data: { 
+        userId: user.id,
+        title: req.body.title || 'New Conversation'
+      }
+    });
+    
+    res.json(conversation);
+  } catch (error) {
+    console.error('Error creating conversation:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to create conversation'
+    });
+  }
+});
+
 // Function to fetch and sort conversations
 export async function getSortedConversations(userId) {
   const conversations = await prisma.conversation.findMany({
