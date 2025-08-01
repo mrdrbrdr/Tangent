@@ -30,10 +30,11 @@ async function getOrCreateDefaultConversation(userId) {
 }
 
 // Create a main node (regular chat message)
-async function createMainNode(conversationId, userInput, aiResponse, summaryShort, summaryLong) {
+async function createMainNode(conversationId, userInput, aiResponse, summaryShort, summaryLong, parentNodeId = null) {
   return await prisma.node.create({
     data: {
       conversationId,
+      parentNodeId,
       userInput,
       aiResponse,
       summaryShort,
@@ -58,9 +59,57 @@ async function createTangentNode(conversationId, parentNodeId, userInput, aiResp
   });
 }
 
+// Build conversation history from root to latest for LLM context
+async function assemblingChatContext(conversationId, latestNodeId) {
+  if (!latestNodeId) {
+    return []; // No context for first message
+  }
+
+  const conversationPath = [];
+  let currentNode = await prisma.node.findUnique({
+    where: { id: latestNodeId },
+    select: {
+      id: true,
+      parentNodeId: true,
+      userInput: true,
+      aiResponse: true
+    }
+  });
+  
+  // Trace back to root node
+  while (currentNode) {
+    conversationPath.unshift(currentNode); // Add to beginning of array
+    if (currentNode.parentNodeId) {
+      currentNode = await prisma.node.findUnique({
+        where: { id: currentNode.parentNodeId },
+        select: {
+          id: true,
+          parentNodeId: true,
+          userInput: true,
+          aiResponse: true
+        }
+      });
+    } else {
+      break; // Reached root
+    }
+  }
+  
+  // Convert to LLM-formatted messages with full context
+  const compiledChatContext = [];
+  for (const node of conversationPath) {
+    compiledChatContext.push(
+      { role: 'user', content: node.userInput },
+      { role: 'assistant', content: node.aiResponse }
+    );
+  }
+  
+  return compiledChatContext;
+}
+
 export {
   getOrCreateDefaultUser,
   getOrCreateDefaultConversation,
   createMainNode,
-  createTangentNode
+  createTangentNode,
+  assemblingChatContext
 };

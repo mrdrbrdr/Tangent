@@ -1,7 +1,8 @@
 // src/server/routes/fork.js
 import express from 'express';
-import { getLLMResponseWithSummaries } from '../controllers/llm.js';
-import { createTangentNode } from '../controllers/nodes.js';
+import { getConversationResponse } from '../controllers/conversation.js';
+import { updateNodeWithSummaries } from '../controllers/summarization.js';
+import { createTangentNode, assemblingChatContext } from '../controllers/nodes.js';
 import prisma from '../db.js';
 
 const router = express.Router();
@@ -22,28 +23,33 @@ router.post('/fork', async (req, res) => {
     // 2) Extract the conversationId from the parent
     const conversationId = parentNode.conversationId;
 
-    // 3) Call LLM function to get the AI response & summaries
-    const { mainAnswer, summaryShort, summaryLong } = 
-      await getLLMResponseWithSummaries(userInput);
+    // 3) Build conversation context from the fork point
+    const compiledChatContext = await assemblingChatContext(conversationId, parentNodeId);
 
-    // 4) Create the new tangent node
+    // 4) Get natural conversation response (no JSON constraints!)
+    const aiResponse = await getConversationResponse(userInput, compiledChatContext, 'default');
+
+    // 5) Create the new tangent node immediately with response (summaries will be added later)
     const newNode = await createTangentNode(
       conversationId,
       parentNodeId,
       userInput,
-      mainAnswer,
-      summaryShort,
-      summaryLong
+      aiResponse,
+      null,  // summaryShort - will be updated later
+      null   // summaryLong - will be updated later
     );
 
-    // 5) Send response back to client
+    // 6) Send immediate response to client (don't wait for summaries)
     res.json({
-      response: mainAnswer,
-      shortSummary: summaryShort,
-      longSummary: summaryLong,
+      response: aiResponse,
+      shortSummary: "Generating summary...",  // Placeholder
+      longSummary: "Summary being generated in background...",  // Placeholder
       nodeId: newNode.id,
       branchType: 'TANGENT'
     });
+
+    // 7) Generate summaries in background (async, don't block response)
+    updateNodeWithSummaries(newNode.id, userInput, aiResponse);
   } catch (error) {
     console.error("Error creating fork:", error);
     res.status(500).json({ error: error.message || "Failed to fork from parent node" });

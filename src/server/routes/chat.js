@@ -1,42 +1,78 @@
 // src/server/routes/chat.js
 import express from 'express';
-import { getLLMResponseWithSummaries } from '../controllers/llm.js';
+import { getConversationResponse } from '../controllers/conversation.js';
+import { updateNodeWithSummaries } from '../controllers/summarization.js';
 import { 
   getOrCreateDefaultUser, 
   getOrCreateDefaultConversation, 
-  createMainNode 
+  createMainNode,
+  assemblingChatContext
 } from '../controllers/nodes.js';
+import prisma from '../db.js';
 
 const router = express.Router();
 
 router.post('/chat', async (req, res) => {
-  const userInput = req.body.message;
+  const { message: userInput, conversationId } = req.body;
   
   try {
-    // For MVP, create default user and conversation if they don't exist
-    const user = await getOrCreateDefaultUser();
-    const conversation = await getOrCreateDefaultConversation(user.id);
+    // Get the specified conversation, or create default if not provided
+    let conversation;
+    if (conversationId) {
+      // Try to find the provided conversation ID
+      conversation = await prisma.conversation.findUnique({
+        where: { id: parseInt(conversationId) }
+      });
+      
+      // If conversation doesn't exist, fall back to creating default
+      if (!conversation) {
+        console.log(`Conversation ${conversationId} not found, creating default conversation`);
+        const user = await getOrCreateDefaultUser();
+        conversation = await getOrCreateDefaultConversation(user.id);
+      }
+    } else {
+      // Fallback: create default user and conversation if no ID provided
+      const user = await getOrCreateDefaultUser();
+      conversation = await getOrCreateDefaultConversation(user.id);
+    }
 
-    // Get LLM response with summaries
-    const { mainAnswer, summaryShort, summaryLong } = 
-      await getLLMResponseWithSummaries(userInput);
+    // Find the latest node in this conversation to use as parent
+    const latestNode = await prisma.node.findFirst({
+      where: { 
+        conversationId: conversation.id,
+        branchType: 'MAIN'  // Only continue from main thread nodes
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
-    // Create new node
+    // Build conversation context for LLM
+    const compiledChatContext = latestNode 
+      ? await assemblingChatContext(conversation.id, latestNode.id)
+      : [];
+
+    // Step 1: Get natural conversation response (no JSON constraints!)
+    const aiResponse = await getConversationResponse(userInput, compiledChatContext, 'default');
+
+    // Step 2: Create node immediately with response (summaries will be added later)
     const newNode = await createMainNode(
       conversation.id,
       userInput,
-      mainAnswer,
-      summaryShort,
-      summaryLong
+      aiResponse,
+      null,  // summaryShort - will be updated later
+      null,  // summaryLong - will be updated later
+      latestNode?.id || null  // Use latest main node as parent, or null for first message
     );
 
-    // Send response back to client
+    // Step 3: Send immediate response to user (don't wait for summaries)
     res.json({
-      response: mainAnswer,
-      shortSummary: summaryShort,
-      longSummary: summaryLong,
+      response: aiResponse,
+      shortSummary: "Generating summary...",  // Placeholder
+      longSummary: "Summary being generated in background...",  // Placeholder
       nodeId: newNode.id
     });
+
+    // Step 4: Generate summaries in background (async, don't block response)
+    updateNodeWithSummaries(newNode.id, userInput, aiResponse);
 
   } catch (error) {
     console.error('Chat endpoint error:', error);

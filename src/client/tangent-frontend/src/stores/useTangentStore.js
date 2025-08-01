@@ -55,13 +55,13 @@ export const useTangentStore = defineStore('tangent', {
     // Load messages for current conversation
     async loadMessages() {
       try {
-        const res = await
-axios.get(`${API_BASE}/conversation/${this.currentConversationId}/nodes`);
+        const res = await axios.get(`${API_BASE}/conversation/${this.currentConversationId}/nodes`);
         // Convert nodes to message format
-        this.messages = this.convertNodesToMessages(res.data.nodes);
+        this.messages = this.convertNodesToMessages(res.data.nodes || []);
       } catch (error) {
-        console.error('Failed to load messages from database, checking localStorage');
-        this.loadFromLocalStorage();
+        console.error('Failed to load messages from database:', error);
+        // For new conversations, start with empty messages (don't fallback to localStorage)
+        this.messages = [];
       }
     },
 
@@ -77,7 +77,8 @@ axios.get(`${API_BASE}/conversation/${this.currentConversationId}/nodes`);
         this.messages.push({ userInput });
 
         const res = await axios.post(`${API_BASE}/chat`, {
-          message: userInput
+          message: userInput,
+          conversationId: this.currentConversationId
         });
 
         const { response, shortSummary, longSummary, nodeId } = res.data;
@@ -172,6 +173,42 @@ axios.get(`${API_BASE}/conversation/${this.currentConversationId}/nodes`);
 
     clearLocalStorage() {
       localStorage.removeItem('chatMessages');
+    },
+
+    // Create a new conversation and switch to it
+    async createNewConversation() {
+      try {
+        this.isLoading = true;
+
+        // Create new conversation via API
+        const res = await axios.post(`${API_BASE}/conversations`, {
+          title: 'New Conversation'
+        });
+
+        const newConversation = res.data;
+
+        // Add to conversations list
+        this.conversations.unshift(newConversation); // Add to beginning
+
+        // Switch to new conversation
+        this.currentConversationId = newConversation.id;
+
+        // Clear messages (new conversation has no nodes yet)
+        this.messages = [];
+
+        // Clear localStorage for fresh start
+        this.clearLocalStorage();
+
+        console.log(`Created new conversation with ID: ${newConversation.id}`);
+
+      } catch (error) {
+        console.error('Failed to create new conversation:', error);
+        // Fallback: just clear current conversation
+        this.messages = [];
+        this.clearLocalStorage();
+      } finally {
+        this.isLoading = false;
+      }
     }
   }
 });

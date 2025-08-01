@@ -5,60 +5,49 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// We'll build a single function that returns all 3 items:
-async function getLLMResponseWithSummaries(userInput) {
+// Model definitions - centralized model management
+export const MODELS = {
+  conversation: 'gpt-4o-mini',
+  summarization: 'gpt-3.5-turbo',
+  // Future: 'claude-3-haiku', 'llama-2', etc.
+};
+
+// System prompts - centralized personality management
+export const SYSTEM_PROMPTS = {
+  default: "You are a helpful AI assistant. Respond naturally and conversationally. You can use markdown formatting if helpful.",
+  creative: "You are a creative writing assistant. Help users with storytelling, poetry, and creative projects. Be imaginative and inspiring.",
+  technical: "You are a technical expert. Provide precise, detailed explanations with code examples when relevant. Be thorough and accurate.",
+  casual: "You are a friendly, casual AI assistant. Keep responses conversational and approachable, like talking to a good friend.",
+  // Future: user-customizable prompts loaded from database
+};
+
+// Centralized OpenAI API caller
+export async function callLLM(messages, modelType = 'conversation', options = {}) {
   try {
-    // Build a prompt that requests the main answer, plus short & long summaries
-    const systemInstructions = `
-      You are an AI assistant. You will receive a user input.
-      1) Provide a response ("mainAnswer").
-      2) Then provide a short summary of your answer (40–80 chars) labeled "summaryShort".
-      3) Then provide a longer summary (~350 chars) labeled "summaryLong".
-      IMPORTANT: Format your response in JSON only, e.g.:
-      {
-        "mainAnswer": "...",
-        "summaryShort": "...",
-        "summaryLong": "..."
-      }
-      Do NOT include any additional keys or text besides that JSON.
-    `;
+    const defaultOptions = {
+      model: MODELS[modelType],
+      messages: messages,
+      temperature: 0.7,
+    };
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: systemInstructions },
-        { role: 'user', content: userInput }
-      ],
-      temperature: 0.7, // adjust as desired
+      ...defaultOptions,
+      ...options  // Allow overriding defaults
     });
 
-    const rawText = response.choices[0].message.content.trim();
-
-    // Parse the JSON response
-    let parsed;
-    try {
-      parsed = JSON.parse(rawText);
-    } catch (err) {
-      console.error('Failed to parse LLM JSON:', rawText);
-      throw new Error('LLM did not return valid JSON');
-    }
-
-    // Validate that all required fields exist and are non-empty
-    if (!parsed.mainAnswer || !parsed.summaryShort || !parsed.summaryLong) {
-      console.error('Incomplete LLM response:', parsed);
-      throw new Error('LLM response missing required fields');
-    }
-
-    // Return with our expected field names
-    return {
-      mainAnswer: parsed.mainAnswer,
-      summaryShort: parsed.summaryShort,
-      summaryLong: parsed.summaryLong
-    };
+    return response;
   } catch (error) {
-    console.error("Error calling OpenAI API:", error);
-    throw error;  // This will be caught by the Express error handler
+    console.error(`Error calling ${modelType} LLM:`, error);
+    throw error;
   }
 }
 
-export { getLLMResponseWithSummaries };
+// Helper to get available models
+export function getAvailableModels() {
+  return Object.keys(MODELS);
+}
+
+// Helper to get available personalities
+export function getAvailablePersonalities() {
+  return Object.keys(SYSTEM_PROMPTS);
+}

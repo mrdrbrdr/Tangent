@@ -14,6 +14,8 @@ router.get('/conversation/:id/nodes', async (req, res) => {
       select: {
         id: true,
         parentNodeId: true,
+        userInput: true,
+        aiResponse: true,
         summaryShort: true,
         summaryLong: true,
         branchType: true,

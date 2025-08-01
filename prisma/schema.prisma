@@ -50,8 +50,8 @@ model Node {
   aiResponse     String
 
   // Summaries for the entire user+AI exchange
-  summaryShort   String
-  summaryLong    String
+  summaryShort   String?
+  summaryLong    String?
 
   // Distinguish main path from tangents
   branchType     BranchType  // e.g., 'MAIN' or 'TANGENT'

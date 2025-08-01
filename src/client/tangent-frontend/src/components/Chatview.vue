@@ -4,7 +4,7 @@
       <!-- User messages are right-aligned, AI messages left-aligned -->
       <div v-for="(msg, idx) in messages" :key="idx" class="message-row">
         <!-- User message -->
-        <div v-if="msg.userInput && !msg.aiResponse" class="user-message">
+        <div v-if="msg.userInput" class="user-message">
           <div class="message-content">{{ msg.userInput }}</div>
         </div>
         
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import { useTangentStore } from '../stores/useTangentStore.js'
 import ChatInput from './ChatInput.vue';
 
 export default {
@@ -39,98 +39,36 @@ export default {
   components: {
     ChatInput
   },
-  data() {
-    return {
-      userPrompt: '',
-      messages: [],
-      forkingFromId: null
-    };
-  },
-  mounted() {
-    this.loadMessages();
+  computed: {
+    messages() {
+      // Get messages from Pinia store instead of local data
+      const store = useTangentStore();
+      return store.messages;
+    },
+    forkingFromId() {
+      // Get forking state from Pinia store
+      const store = useTangentStore();
+      return store.forkingFromId;
+    },
+    isLoading() {
+      // Get loading state from Pinia store for potential spinner
+      const store = useTangentStore();
+      return store.isLoading;
+    }
   },
   methods: {
-    handleSendMessage(message) {
-      if (this.forkingFromId) {
-        this.createFork(message);
-      } else {
-        this.userPrompt = message;
-        this.sendMessage();
-      }
-    },
-    async sendMessage() {
-      try {
-        if (!this.userPrompt) return;
-        
-        // Add user message immediately
-        this.messages.push({
-          userInput: this.userPrompt
-        });
-        
-        // Send to server
-        const res = await axios.post('http://localhost:3000/api/chat', {
-          message: this.userPrompt
-        });
-
-        // We still need to receive the summaries and nodeId from the server
-        // Even though we don't display the summaries in the chat view
-        const { response, shortSummary, longSummary, nodeId } = res.data;
-
-        // Add AI response
-        this.messages.push({
-          aiResponse: response,
-          summaryShort: shortSummary, // Store but don't display
-          summaryLong: longSummary,   // Store but don't display
-          nodeId: nodeId
-        });
-
-        this.userPrompt = '';
-        this.saveMessages(); // Save messages to local storage
-      } catch (err) {
-        console.error('Error sending message:', err);
-      }
-    },
-    saveMessages() {
-      localStorage.setItem('chatMessages', JSON.stringify(this.messages));
-    },
-    loadMessages() {
-      const savedMessages = localStorage.getItem('chatMessages');
-      if (savedMessages) {
-        this.messages = JSON.parse(savedMessages);
-      }
+    async handleSendMessage(message) {
+      // Use store's sendMessage method instead of local logic
+      const store = useTangentStore();
+      await store.sendMessage(message);
     },
     startFork(nodeId) {
-      this.forkingFromId = nodeId;
-    },
-    
-    async createFork(forkPrompt) {
-      try {
-        if (!forkPrompt) return;
-        
-        this.messages.push({
-          userInput: forkPrompt,
-          isTangent: true
-        });
-        
-        const res = await axios.post('http://localhost:3000/api/fork', {
-          parentNodeId: this.forkingFromId,
-          userInput: forkPrompt
-        });
-
-        const { response, nodeId } = res.data;
-
-        this.messages.push({
-          aiResponse: response,
-          nodeId: nodeId,
-          isTangent: true,
-          parentId: this.forkingFromId
-        });
-
-        this.forkingFromId = null;
-      } catch (err) {
-        console.error('Error creating fork:', err);
-      }
+      // Use store's startFork method
+      const store = useTangentStore();
+      store.startFork(nodeId);
     }
+    // Removed: sendMessage(), createFork(), saveMessages(), loadMessages()
+    // All this logic is now in the Pinia store!
   }
 };
 </script>
