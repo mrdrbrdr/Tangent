@@ -22,6 +22,19 @@ export default {
     await this.loadNodes();
     this.buildGraph();
   },
+  watch: {
+    // React to conversation changes
+    conversationId: {
+      async handler(newConversationId, oldConversationId) {
+        if (newConversationId !== oldConversationId) {
+          console.log('Conversation changed from', oldConversationId, 'to', newConversationId);
+          await this.loadNodes();
+          this.buildGraph();
+        }
+      },
+      immediate: false
+    }
+  },
   methods: {
     async loadNodes() {
       try {
@@ -30,6 +43,9 @@ export default {
         this.nodes = data.nodes;
         this.rootNodeId = data.rootNodeId;
         
+        console.log('Loaded nodes:', this.nodes.length);
+        console.log('Nodes data:', this.nodes);
+        
         // Build links array from parent-child relationships
         this.links = this.nodes
           .filter(n => n.parentNodeId !== null)
@@ -37,13 +53,19 @@ export default {
             source: n.parentNodeId,
             target: n.id
           }));
+          
+        console.log('Links:', this.links);
       } catch (err) {
         console.error('Error loading nodes:', err);
       }
     },
     buildGraph() {
-      const width = 800;
-      const height = 600;
+      // Use full browser dimensions
+      const width = window.innerWidth - 288; // Account for sidebar width (18rem = 288px)
+      const height = window.innerHeight;
+      
+      // Clear any existing SVG
+      d3.select(this.$refs.chart).selectAll('*').remove();
       
       // Create SVG container
       const svg = d3.select(this.$refs.chart)
@@ -51,28 +73,41 @@ export default {
         .attr('width', width)
         .attr('height', height);
 
-      // Create force simulation
+      // Sort nodes to establish main thread order
+      const mainNodes = this.nodes.filter(n => n.branchType === 'MAIN').sort((a, b) => a.id - b.id);
+      const tangentNodes = this.nodes.filter(n => n.branchType === 'TANGENT');
+      
+      // Position nodes manually instead of using force simulation
+      const nodeSpacing = 120;
+      const startY = 100;
+      
+      // Position main nodes vertically down the center
+      mainNodes.forEach((node, index) => {
+        node.x = width / 2;
+        node.y = startY + (index * nodeSpacing);
+        node.fx = node.x; // Fix position
+        node.fy = node.y;
+      });
+      
+      // Position tangent nodes to the sides
+      tangentNodes.forEach(node => {
+        const parentNode = this.nodes.find(n => n.id === node.parentNodeId);
+        if (parentNode) {
+          // Alternate left and right sides
+          const isLeftSide = node.id % 2 === 0;
+          node.x = parentNode.x + (isLeftSide ? -200 : 200);
+          node.y = parentNode.y + 60; // Slightly below parent
+          node.fx = node.x;
+          node.fy = node.y;
+        }
+      });
+
+      // Create a simple simulation just for the links
       const simulation = d3.forceSimulation(this.nodes)
         .force('link', d3.forceLink(this.links)
           .id(d => d.id)
           .distance(100))
-        .force('charge', d3.forceManyBody().strength(-300))
-        .force('y', d3.forceY(d => {
-          // Main nodes go down vertically
-          if (d.branchType === 'MAIN') {
-            return height / 2;
-          }
-          // Tangents offset to the sides
-          return height / 2 + (Math.random() - 0.5) * 200;
-        }))
-        .force('x', d3.forceX(d => {
-          // Main nodes centered
-          if (d.branchType === 'MAIN') {
-            return width / 2;
-          }
-          // Tangents to the sides
-          return width / 2 + (d.id % 2 ? 200 : -200);
-        }));
+        .stop(); // Stop immediately since we have fixed positions
 
       // Draw links (lines between nodes)
       const link = svg.append('g')
@@ -105,22 +140,20 @@ export default {
         .attr('fill', 'white')
         .attr('font-size', '10px');
 
-      // Update positions on each tick
-      simulation.on('tick', () => {
-        link
-          .attr('x1', d => d.source.x)
-          .attr('y1', d => d.source.y)
-          .attr('x2', d => d.target.x)
-          .attr('y2', d => d.target.y);
+      // Since we have fixed positions, update positions immediately
+      link
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
 
-        node
-          .attr('cx', d => d.x)
-          .attr('cy', d => d.y);
+      node
+        .attr('cx', d => d.x)
+        .attr('cy', d => d.y);
 
-        label
-          .attr('x', d => d.x)
-          .attr('y', d => d.y);
-      });
+      label
+        .attr('x', d => d.x)
+        .attr('y', d => d.y);
     },
     drag(simulation) {
       function dragstarted(event) {
@@ -147,16 +180,18 @@ export default {
     },
     showTooltip(event, d) {
       const tooltip = d3.select('#tooltip');
+      const longSummary = d.summaryLong || 'No summary available';
       tooltip
         .style('display', 'block')
         .style('left', (event.pageX + 10) + 'px')
         .style('top', (event.pageY - 10) + 'px')
-        .html(`<strong>Long Summary:</strong><br>${d.summaryLong}`);
+        .html(`<strong>Long Summary:</strong><br>${longSummary}`);
     },
     hideTooltip() {
       d3.select('#tooltip').style('display', 'none');
     },
     truncateText(text, length) {
+      if (!text) return 'No summary';
       return text.length > length ? text.substring(0, length) + '...' : text;
     }
   }
@@ -165,21 +200,24 @@ export default {
 
 <style scoped>
 .overview-container {
-  width: 800px;
-  height: 600px;
-  margin: 0 auto;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden; /* Prevent internal scrolling */
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  background-color: #1a1a1a;
+  overflow: hidden;
 }
 
 .tooltip {
-  position: absolute;
-  background: white;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  position: fixed;
+  background: #333;
+  color: white;
+  padding: 12px;
+  border: 1px solid #555;
+  border-radius: 6px;
   max-width: 300px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 1000;
+  font-size: 14px;
+  line-height: 1.4;
 }
 </style> 
